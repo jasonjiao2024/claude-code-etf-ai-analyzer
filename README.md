@@ -1,10 +1,12 @@
-# Claude Code Finance Skills Bundle
+# Claude Code Finance Skills
 
-Five skills for financial analysis in Claude Code (both the CLI and the VS Code extension share `~/.claude/skills/`).
+Five skills for financial analysis in [Claude Code](https://claude.com/claude-code) (the CLI and the VS Code extension share `~/.claude/skills/`, so installing once covers both).
 
-## Install
+## Quick start
 
 ```bash
+git clone https://github.com/jasonjiao2024/claude-finance-skills.git
+cd claude-finance-skills
 ./install.sh
 ```
 
