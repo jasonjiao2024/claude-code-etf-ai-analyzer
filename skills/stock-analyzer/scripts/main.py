@@ -99,6 +99,7 @@ def fetch_quote(ticker: str) -> dict[str, Any]:
         "pe_ratio": info.get("trailingPE"),
         "revenue": info.get("totalRevenue"),
         "net_income": info.get("netIncomeToCommon"),
+        "currency": info.get("currency") or fast_attr("currency"),
     }
 
 
@@ -372,7 +373,7 @@ def main() -> int:
     args = p.parse_args()
 
     ticker = args.ticker.upper()
-    market_name, market_code, currency = detect_market(ticker)
+    market_name, market_code, default_currency = detect_market(ticker)
 
     cp = cache_path(ticker, args.period, args.interval)
     cached = None if args.no_cache else load_cache(cp)
@@ -407,7 +408,7 @@ def main() -> int:
             "market": market_code,
             "market_name": market_name,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "currency": currency,
+            "currency": quote.get("currency") or default_currency,
             "period": args.period,
             "interval": args.interval,
             "cached": False,

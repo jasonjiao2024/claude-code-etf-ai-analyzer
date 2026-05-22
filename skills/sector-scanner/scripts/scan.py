@@ -66,6 +66,52 @@ THEMATIC_ETFS = {
     "GDX": "Gold Miners",
 }
 
+# Curated UCITS / UK-tradable universe. All verified to resolve on yfinance.
+# Currency notes: LSE listings can be USD-quoted, GBP-quoted, or GBp (pence). yfinance's
+# `info.currency` is the source of truth; for T212 GBP accounts USD-quoted lines incur
+# an FX conversion fee on buy/sell.
+UCITS_UNIVERSE = {
+    # Broad market
+    "SWDA.L":  "iShares Core MSCI World",
+    "CSPX.L":  "iShares Core S&P 500",
+    "CNDX.L":  "iShares Nasdaq 100",
+    "IEMA.L":  "iShares MSCI Emerging Markets",
+    # US sector ETFs (UCITS equivalents of SPDR sectors)
+    "IUIT.L":  "US Tech (S&P sector)",
+    "IUFS.L":  "US Financials (S&P sector)",
+    "IUHC.L":  "US Healthcare (S&P sector)",
+    "IUCD.L":  "US Consumer Discretionary (S&P sector)",
+    "IUES.L":  "US Energy (S&P sector)",
+    "IUIS.L":  "US Industrials (S&P sector)",
+    "IUUS.L":  "US Utilities (S&P sector)",
+    # Thematics
+    "AINF.L":  "iShares AI Infrastructure",
+    "AIAI.L":  "L&G Artificial Intelligence",
+    "RBOT.L":  "iShares Automation & Robotics",
+    "ISUN.L":  "Invesco Solar Energy",
+    "INRG.L":  "iShares Global Clean Energy",
+    "WCBR.L":  "WisdomTree Cybersecurity",
+    "ARMR.L":  "Global X Defence",
+    "URNM.L":  "Sprott Uranium Miners",
+    "HEAL.L":  "iShares Healthcare Innovation",
+    # Commodities / crypto
+    "SGLD.L":  "Invesco Physical Gold",
+    "BTCE.DE": "Bitwise Physical Bitcoin",
+}
+
+# UCITS-sector ETFs track essentially the same baskets as SPDR sectors,
+# so we reuse SPDR top-5 holdings for sentiment aggregation. Thematic and
+# broad-market UCITS use the ETF ticker only (sparse but honest).
+UCITS_CONSTITUENTS = {
+    "IUIT.L": SECTOR_CONSTITUENTS["XLK"],
+    "IUFS.L": SECTOR_CONSTITUENTS["XLF"],
+    "IUHC.L": SECTOR_CONSTITUENTS["XLV"],
+    "IUCD.L": SECTOR_CONSTITUENTS["XLY"],
+    "IUES.L": SECTOR_CONSTITUENTS["XLE"],
+    "IUIS.L": SECTOR_CONSTITUENTS["XLI"],
+    "IUUS.L": SECTOR_CONSTITUENTS["XLU"],
+}
+
 
 def _sma(s: pd.Series, n: int) -> pd.Series:
     return s.rolling(n).mean()
@@ -232,7 +278,8 @@ def composite_score(
 def main() -> int:
     p = argparse.ArgumentParser(description="Sector/ETF momentum scanner with sentiment overlay")
     p.add_argument("--universe", help="Comma-separated tickers; overrides defaults")
-    p.add_argument("--include-thematic", action="store_true", help="Add 12 thematic ETFs to default SPDR set")
+    p.add_argument("--ucits", action="store_true", help="Use curated UCITS / UK-tradable universe instead of SPDR default")
+    p.add_argument("--include-thematic", action="store_true", help="Add 12 US thematic ETFs to whichever base universe is selected")
     p.add_argument("--no-sentiment", action="store_true", help="Skip news sentiment (much faster)")
     p.add_argument("--top", type=int, default=3, help="Leaders/laggards count")
     args = p.parse_args()
@@ -241,6 +288,15 @@ def main() -> int:
         universe = [t.strip().upper() for t in args.universe.split(",") if t.strip()]
         names = {t: t for t in universe}
         constituents = {t: [t] for t in universe}
+    elif args.ucits:
+        universe = list(UCITS_UNIVERSE.keys())
+        names = dict(UCITS_UNIVERSE)
+        constituents = {t: list(UCITS_CONSTITUENTS.get(t, [t])) for t in universe}
+        if args.include_thematic:
+            universe += list(THEMATIC_ETFS.keys())
+            names.update(THEMATIC_ETFS)
+            for t in THEMATIC_ETFS:
+                constituents[t] = [t]
     else:
         universe = list(SPDR_SECTORS.keys())
         names = dict(SPDR_SECTORS)

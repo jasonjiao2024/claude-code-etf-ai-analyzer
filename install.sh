@@ -1,5 +1,5 @@
 #!/bin/bash
-# Installer for Claude Code finance skills bundle.
+# Installer for the Claude Code ETF AI Analyzer skill bundle.
 # Copies skills + runtime into ~/.claude/, creates Python venvs, installs deps.
 # Idempotent — safe to re-run; it replaces files and recreates venvs.
 
@@ -19,7 +19,7 @@ echo "    python3 = ${PY_VERSION}"
 
 echo "==> Copying skill folders"
 mkdir -p "${CLAUDE_DIR}/skills"
-for skill in finance-xlsx finance-pptx finance-pdf stock-analyzer sector-scanner; do
+for skill in finance-xlsx finance-pptx finance-pdf stock-analyzer sector-scanner etf-analyzer etf-backtest; do
   echo "    - ${skill}"
   rm -rf "${CLAUDE_DIR}/skills/${skill}"
   cp -R "${BUNDLE_DIR}/skills/${skill}" "${CLAUDE_DIR}/skills/${skill}"
@@ -33,8 +33,10 @@ cp -R "${BUNDLE_DIR}/scripts/finance-skills" "${CLAUDE_DIR}/scripts/finance-skil
 chmod +x "${CLAUDE_DIR}/scripts/finance-skills/run_skill.sh"
 chmod +x "${CLAUDE_DIR}/skills/stock-analyzer/run.sh"
 chmod +x "${CLAUDE_DIR}/skills/sector-scanner/run.sh"
+chmod +x "${CLAUDE_DIR}/skills/etf-analyzer/run.sh"
+chmod +x "${CLAUDE_DIR}/skills/etf-backtest/run.sh"
 
-echo "==> Creating Python venvs and installing deps (this takes ~1–2 min)"
+echo "==> Creating Python venvs and installing deps (this takes ~2–3 min)"
 
 echo "    - finance-skills venv (anthropic)"
 python3 -m venv "${CLAUDE_DIR}/scripts/finance-skills/.venv"
@@ -51,18 +53,34 @@ python3 -m venv "${CLAUDE_DIR}/skills/sector-scanner/.venv"
 "${CLAUDE_DIR}/skills/sector-scanner/.venv/bin/pip" install --upgrade --quiet pip
 "${CLAUDE_DIR}/skills/sector-scanner/.venv/bin/pip" install --quiet yfinance pandas numpy textblob
 
+echo "    - etf-analyzer venv (yfinance)"
+python3 -m venv "${CLAUDE_DIR}/skills/etf-analyzer/.venv"
+"${CLAUDE_DIR}/skills/etf-analyzer/.venv/bin/pip" install --upgrade --quiet pip
+"${CLAUDE_DIR}/skills/etf-analyzer/.venv/bin/pip" install --quiet yfinance pandas numpy
+
+echo "    - etf-backtest venv (yfinance + matplotlib)"
+python3 -m venv "${CLAUDE_DIR}/skills/etf-backtest/.venv"
+"${CLAUDE_DIR}/skills/etf-backtest/.venv/bin/pip" install --upgrade --quiet pip
+"${CLAUDE_DIR}/skills/etf-backtest/.venv/bin/pip" install --quiet yfinance pandas numpy matplotlib
+
+# Runtime directories for cache / charts
 mkdir -p "${CLAUDE_DIR}/skills/stock-analyzer/cache" "${CLAUDE_DIR}/skills/stock-analyzer/charts"
 mkdir -p "${CLAUDE_DIR}/skills/sector-scanner/cache"
+mkdir -p "${CLAUDE_DIR}/skills/etf-analyzer/cache"
+mkdir -p "${CLAUDE_DIR}/skills/etf-backtest/charts"
 
 cat <<EOF
 
-==> Done. Five skills installed.
+==> Done. Seven skills installed.
 
-    Anthropic-hosted wrappers (need ANTHROPIC_API_KEY):
+    yfinance-backed (no API key needed):
+      stock-analyzer    — single ticker + 15 technical indicators + chart + sentiment
+      sector-scanner    — sector / ETF momentum ranking + sentiment overlay (SPDR + UCITS universes)
+      etf-analyzer      — ETF deep-dive (holdings, sectors, AUM, drawdown) + --compare overlap mode
+      etf-backtest      — single ETF or basket backtest with drawdown chart
+
+    Anthropic-hosted wrappers (need ANTHROPIC_API_KEY exported):
       finance-xlsx, finance-pptx, finance-pdf
-
-    yfinance-backed, no API key needed:
-      stock-analyzer, sector-scanner
 
     For finance-*, export your Anthropic key:
       export ANTHROPIC_API_KEY=sk-ant-...
@@ -72,6 +90,8 @@ cat <<EOF
 
     Smoke tests:
       ~/.claude/skills/stock-analyzer/run.sh --ticker AAPL --technical --no-chart --no-sentiment
-      ~/.claude/skills/sector-scanner/run.sh --no-sentiment
+      ~/.claude/skills/sector-scanner/run.sh --ucits --no-sentiment --top 5
+      ~/.claude/skills/etf-analyzer/run.sh --ticker AINF.L
+      ~/.claude/skills/etf-backtest/run.sh --tickers SWDA.L --period 5y --no-chart
 
 EOF

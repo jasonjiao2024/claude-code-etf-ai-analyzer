@@ -26,11 +26,26 @@ This is a **descriptive scanner**, not a forecaster. It identifies which sector 
 
 ```bash
 ~/.claude/skills/sector-scanner/run.sh                          # default: 11 SPDR sectors + sentiment
-~/.claude/skills/sector-scanner/run.sh --include-thematic       # adds 12 thematics (IBIT, ARKK, TAN, ICLN, LIT, SOXX, XBI, KWEB, URA, JETS, HACK, GDX)
+~/.claude/skills/sector-scanner/run.sh --include-thematic       # adds 12 US thematics (IBIT, ARKK, TAN, ICLN, LIT, SOXX, XBI, KWEB, URA, JETS, HACK, GDX)
+~/.claude/skills/sector-scanner/run.sh --ucits                  # 21 UCITS / UK-tradable ETFs (T212-friendly)
+~/.claude/skills/sector-scanner/run.sh --ucits --include-thematic  # UCITS + US thematics in one scan
 ~/.claude/skills/sector-scanner/run.sh --no-sentiment           # ~10s instead of ~30-60s
 ~/.claude/skills/sector-scanner/run.sh --universe SPY,QQQ,VTI,IWM,VWO   # custom basket
 ~/.claude/skills/sector-scanner/run.sh --top 5                  # show top/bottom 5 instead of 3
 ```
+
+### UCITS universe (`--ucits`)
+
+22 LSE / Xetra UCITS ETFs covering broad market, US sectors, thematics, commodity, and crypto. All verified against yfinance. Use for T212 UK accounts.
+
+| Group         | Tickers                                                                 |
+| ------------- | ----------------------------------------------------------------------- |
+| Broad market  | `SWDA.L`, `CSPX.L`, `CNDX.L`, `IEMA.L`                                  |
+| US sectors    | `IUIT.L`, `IUFS.L`, `IUHC.L`, `IUCD.L`, `IUES.L`, `IUIS.L`, `IUUS.L`    |
+| Thematics     | `AINF.L`, `AIAI.L`, `RBOT.L`, `ISUN.L`, `INRG.L`, `WCBR.L`, `ARMR.L`, `URNM.L`, `HEAL.L` |
+| Commodity / crypto | `SGLD.L`, `BTCE.DE`                                                |
+
+Sentiment for the seven US-sector lines (`IUIT.L` etc.) reuses the SPDR top-5 constituents (AAPL/MSFT/NVDA for tech, etc.) since the underlying baskets are essentially identical. Thematics and broad-market UCITS use only the ETF ticker for sentiment, which yields sparse Yahoo headlines — sentiment will often be `None` or based on a tiny sample.
 
 ## Composite trend score (0..1)
 
