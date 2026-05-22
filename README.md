@@ -57,7 +57,7 @@ After install, you can also just *ask* in any Claude Code conversation — "what
 
 Claude Code's VS Code extension reads the same `~/.claude/skills/` directory as the CLI. After install + a VS Code restart, the skills register automatically.
 
-## Honest framing
+## Disclaimer
 
 - **`sector-scanner` is descriptive, not predictive.** It tells you what is *currently* leading; it does not forecast. Momentum is a documented anomaly but reverses without warning.
 - **`etf-backtest` is rear-view.** A 2-year backtest in a steady uptrend tells you almost nothing about tail risk. Past performance is not predictive of future returns.
@@ -66,9 +66,6 @@ Claude Code's VS Code extension reads the same `~/.claude/skills/` directory as 
 - **No transaction costs, taxes, FX, or rebalancing** in the backtest. Real-world returns will be lower.
 - **None of this is financial advice.** The composite signals are deterministic functions of the indicators; they don't know your portfolio, time horizon, or risk tolerance.
 
-## Platform notes
-
-Tested on macOS. On Linux should work as-is. On Windows the `.sh` wrappers won't run natively — use WSL, or port to `.ps1`. The Python backends are cross-platform.
 
 ## Uninstall
 
