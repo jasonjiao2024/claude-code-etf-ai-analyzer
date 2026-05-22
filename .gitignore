@@ -1,0 +1,21 @@
+# Python venvs created by install.sh
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Runtime artifacts
+skills/*/cache/*
+!skills/*/cache/.gitkeep
+skills/*/charts/*
+!skills/*/charts/.gitkeep
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Local secrets
+.env
+.env.local
